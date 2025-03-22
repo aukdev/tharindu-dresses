@@ -1,0 +1,27 @@
+services:
+  app:
+    build: .
+    volumes:
+      - ./:/var/www
+    environment:
+      - DB_HOST=db
+      - DB_DATABASE=dressesl_shop
+      - DB_USERNAME=your_user
+      - DB_PASSWORD=your_password
+    depends_on:
+      - db
+
+  db:
+    image: mysql:8.0
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: your_root_password
+      MYSQL_DATABASE: dressesl_shop
+      MYSQL_USER: your_user
+      MYSQL_PASSWORD: your_password
+    volumes:
+      - db_data:/var/lib/mysql
+
+volumes:
+  db_data:
