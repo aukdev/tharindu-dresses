@@ -2,6 +2,7 @@ FROM php:8.2-fpm
 
 # Install system dependencies and PHP extensions needed for Laravel
 RUN apt-get update && apt-get install -y \
+    libzip-dev \
     libfreetype-dev \
     libjpeg62-turbo-dev \
     libpng-dev \
