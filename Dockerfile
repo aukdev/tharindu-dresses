@@ -1,6 +1,7 @@
+# Use PHP 7.4 FPM as the base image
 FROM php:7.4-fpm
 
-# Install system dependencies and PHP extensions needed for Laravel
+# Install system dependencies and PHP extensions
 RUN apt-get update && apt-get install -y \
     libzip-dev \
     libfreetype-dev \
@@ -13,20 +14,29 @@ RUN apt-get update && apt-get install -y \
     git \
     && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
 
-# Install Composer
+# Install Composer globally
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Set working directory
 WORKDIR /var/www
 
-# Copy existing application directory contents
+# Copy application code into the container
 COPY . /var/www
 
-# Install Laravel dependencies
-RUN composer install --prefer-dist --no-dev --optimize-autoloader
+# Install dependencies, optimize, and set permissions
+RUN composer install --prefer-dist --no-dev --optimize-autoloader \
+    && php artisan config:cache \
+    && php artisan route:cache \
+    && php artisan view:cache \
+    && chown -R www-data:www-data /var/www \
+    && chmod -R 775 /var/www/storage \
+    && chmod -R 775 /var/www/bootstrap/cache
 
-# Ensure correct permissions for Laravel storage and cache
-RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+# Generate .env if missing (for development)
+RUN if [ ! -f ".env" ]; then cp .env.example .env && php artisan key:generate; fi
 
+# Expose port 9000 for PHP-FPM
 EXPOSE 9000
+
+# Start PHP-FPM
 CMD ["php-fpm"]
