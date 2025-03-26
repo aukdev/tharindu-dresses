@@ -26,7 +26,6 @@ COPY . /var/www
 # Install dependencies, optimize, and set permissions
 RUN composer install --prefer-dist --no-dev --optimize-autoloader \
     && php artisan config:cache \
-    && php artisan route:cache \
     && php artisan view:cache \
     && chown -R www-data:www-data /var/www \
     && chmod -R 775 /var/www/storage \
