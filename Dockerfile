@@ -1,21 +1,13 @@
-FROM php:7.4
+FROM php:7.4-apache
 
-# Install system dependencies and GD extension
-RUN apt-get update -y && apt-get install -y \
-    openssl zip unzip git libpng-dev libjpeg-dev libfreetype6-dev
+# Install any PHP extensions you need, e.g., mysqli, pdo_mysql:
+RUN docker-php-ext-install mysqli pdo pdo_mysql
 
-# Install PHP Extensions
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd pdo pdo_pgsql
+# Copy your application code to the container
+COPY . /var/www/html/
 
-# Install Composer
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+# Optional: set working directory
+WORKDIR /var/www/html
 
-WORKDIR /var/www
-COPY . /var/www
-
-# Install Laravel dependencies
-RUN composer install
-
-CMD php artisan serve --host=0.0.0.0 --port=9000
-EXPOSE 9000
+# Expose port 80
+EXPOSE 80
