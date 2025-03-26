@@ -2,7 +2,7 @@ services:
   app:
     build: .
     volumes:
-      - ./:/var/www/html
+      - ./:/var/www
     environment:
       - DB_HOST=db
       - DB_DATABASE=dressesl_shop
