@@ -9,6 +9,8 @@ services:
       - DB_PASSWORD=your_password
     networks:
       - application
+    volumes:
+      - ./:/var/www
     depends_on:
       - db
 
