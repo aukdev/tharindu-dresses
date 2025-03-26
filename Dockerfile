@@ -1,13 +1,20 @@
 FROM php:7.4
 
-RUN apt-get update -y && apt-get install -y openssl zip unzip git
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-RUN apt-get update && apt-get install -y libpq-dev 
-RUN docker-php-ext-install pdo pdo_pgsql
+# Install system dependencies and GD extension
+RUN apt-get update -y && apt-get install -y \
+    openssl zip unzip git libpng-dev libjpeg-dev libfreetype6-dev
 
-RUN php -m | grep mbstring
+# Install PHP Extensions
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install gd pdo pdo_pgsql
+
+# Install Composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
 WORKDIR /var/www
 COPY . /var/www
+
+# Install Laravel dependencies
 RUN composer install
 
 CMD php artisan serve --host=0.0.0.0 --port=9000
