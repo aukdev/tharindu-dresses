@@ -10,6 +10,16 @@ services:
       - DB_PASSWORD=your_password
     depends_on:
       - db
+    ports:
+      - 9000:9000
+    networks:
+      - application
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        composer install
+        php artisan migrate
+        php artisan serve --host=0.0.0.0 --port=8000
 
   db:
     image: mysql:8.0
@@ -22,6 +32,14 @@ services:
       MYSQL_PASSWORD: your_password
     volumes:
       - db_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - application
+
+networks:
+  application:
+    driver: bridge
 
 volumes:
   db_data:

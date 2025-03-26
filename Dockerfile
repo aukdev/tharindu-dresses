@@ -1,32 +1,14 @@
-FROM php:7.4-fpm
+FROM php:7.4
 
-# Install system dependencies and PHP extensions needed for Laravel
-RUN apt-get update && apt-get install -y \
-    libzip-dev \
-    libfreetype-dev \
-    libjpeg62-turbo-dev \
-    libpng-dev \
-    libonig-dev \
-    libxml2-dev \
-    zip \
-    unzip \
-    git \
-    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
+RUN apt-get update -y && apt-get install -y openssl zip unzip git
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+RUN apt-get update && apt-get install -y libpq-dev 
+RUN docker-php-ext-install pdo pdo_pgsql
 
-# Install Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-
-# Set working directory
+RUN php -m | grep mbstring
 WORKDIR /var/www
-
-# Copy existing application directory contents
 COPY . /var/www
+RUN composer install
 
-# Install Laravel dependencies
-RUN composer install --prefer-dist --no-dev --optimize-autoloader
-
-# Ensure correct permissions for Laravel storage and cache
-RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
-
+CMD php artisan serve --host=0.0.0.0 --port=9000
 EXPOSE 9000
-CMD ["php-fpm"]
