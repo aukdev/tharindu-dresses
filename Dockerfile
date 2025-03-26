@@ -1,13 +1,32 @@
-FROM php:7.4-apache
+FROM php:7.4-fpm
 
-# Install any PHP extensions you need, e.g., mysqli, pdo_mysql:
-RUN docker-php-ext-install mysqli pdo pdo_mysql
+# Install system dependencies and PHP extensions needed for Laravel
+RUN apt-get update && apt-get install -y \
+    libzip-dev \
+    libfreetype-dev \
+    libjpeg62-turbo-dev \
+    libpng-dev \
+    libonig-dev \
+    libxml2-dev \
+    zip \
+    unzip \
+    git \
+    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
 
-# Copy your application code to the container
-COPY . /var/www/html/
+# Install Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Optional: set working directory
-WORKDIR /var/www/html
+# Set working directory
+WORKDIR /var/www
 
-# Expose port 80
-EXPOSE 80
+# Copy existing application directory contents
+COPY . /var/www
+
+# Install Laravel dependencies
+RUN composer install --prefer-dist --no-dev --optimize-autoloader
+
+# Ensure correct permissions for Laravel storage and cache
+RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+
+EXPOSE 9000
+CMD ["php-fpm"]
